@@ -59,44 +59,6 @@ Runs on http://localhost:5173.
 
 Open http://localhost:5173 in your browser. Make sure the backend is running first.
 
-## API Endpoints
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| GET | /api/todos | Get all todos |
-| GET | /api/todos/:id | Get a single todo by ID |
-| POST | /api/todos | Create a new todo |
-| PUT | /api/todos/:id | Update an existing todo |
-| DELETE | /api/todos/:id | Delete a todo |
-
-### POST /api/todos request body
-
-```json
-{
-  "title": "string (required)",
-  "description": "string (optional)",
-  "category": "work | personal | health | other",
-  "priority": "high | medium | low",
-  "dueDate": "YYYY-MM-DD or null"
-}
-```
-
-### PUT /api/todos/:id request body
-
-All fields are optional. Only provided fields will be updated.
-
-```json
-{
-  "title": "string",
-  "description": "string",
-  "category": "string",
-  "priority": "string",
-  "completed": "boolean",
-  "dueDate": "string or null",
-  "pomodoros": "number"
-}
-```
-
 ## Project Structure
 
 ```
