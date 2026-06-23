@@ -4,8 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
-const DATA_FILE = path.join(__dirname, 'todos.json');
+const PORT = process.env.PORT || 3000;
+const DATA_FILE = process.env.VERCEL ? '/tmp/todos.json' : path.join(__dirname, 'todos.json');
 
 app.use(cors());
 app.use(express.json());
@@ -84,4 +84,8 @@ app.delete('/api/todos/:id', (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+}
+
+module.exports = app;
