@@ -29,7 +29,7 @@ app.get('/api/todos/:id', (req, res) => {
 });
 
 app.post('/api/todos', (req, res) => {
-    const { title, description, category, priority } = req.body;
+    const { title, description, category, priority, dueDate } = req.body;
     if (!title) return res.status(400).json({ error: 'Title required' });
 
     const todos = readTodos();
@@ -39,6 +39,8 @@ app.post('/api/todos', (req, res) => {
         description: description || '',
         category: category || 'other',
         priority: priority || 'medium',
+        dueDate: dueDate || null,
+        pomodoros: 0,
         completed: false,
         createdAt: Date.now(),
         doneAt: null
@@ -49,7 +51,7 @@ app.post('/api/todos', (req, res) => {
 });
 
 app.put('/api/todos/:id', (req, res) => {
-    const { title, description, completed, category, priority } = req.body;
+    const { title, description, completed, category, priority, dueDate, pomodoros } = req.body;
     const todos = readTodos();
     const index = todos.findIndex(t => t.id === req.params.id);
 
@@ -63,6 +65,8 @@ app.put('/api/todos/:id', (req, res) => {
             description: description !== undefined ? description : todos[index].description,
             category: category !== undefined ? category : todos[index].category,
             priority: priority !== undefined ? priority : todos[index].priority,
+            dueDate: dueDate !== undefined ? dueDate : todos[index].dueDate,
+            pomodoros: pomodoros !== undefined ? pomodoros : (todos[index].pomodoros || 0),
             completed: isNowCompleted,
             doneAt: (!wasCompleted && isNowCompleted) ? Date.now() : (isNowCompleted ? todos[index].doneAt : null)
         };
