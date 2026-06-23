@@ -1,153 +1,128 @@
-# Nexus — React + Node.js Multi-Page Todo App
+# Todo App
 
-> A full-stack task management application built with **React (Vite MPA)** + **Node.js/Express**, featuring real-time CRUD, filtering, priorities, categories, and inline editing.
+A multi-page todo application built with React (frontend) and Node.js/Express (backend).
 
----
+This is NOT a single page application. Each page is a separate HTML file with its own React entry point. Navigating between pages triggers a full browser page load.
 
-## 📋 Table of Contents
+## Pages
 
-- [Architecture](#architecture)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [API Reference](#api-reference)
-- [Documentation](#documentation)
-
----
-
-## Architecture
-
-This is a **true Multi-Page Application (MPA)** — it does **not** use React Router or client-side navigation. Instead, Vite is configured with two separate HTML entry points, each bundled independently:
-
-| Page | URL | File | Description |
-|---|---|---|---|
-| Todo List | `/` | `index.html` → `App.jsx` | Lists all todos, add/filter/delete |
-| Todo Detail | `/todo.html?id=<id>` | `todo.html` → `TodoApp.jsx` | Single todo view & edit |
-
-Navigating between the two pages triggers a **full browser page reload**, satisfying the non-SPA requirement.
-
-```
-Browser
-  ├── GET /               → index.html  → React App (list)
-  └── GET /todo.html?id=X → todo.html   → React App (detail)
-              │
-              ▼ (HTTP API calls)
-        Express Backend (port 3000)
-              │
-              ▼
-          todos.json (file-based persistence)
-```
-
----
+1. **Tasks List** (`/`) - Main page. Shows all todos with filters (all, active, done, by category, by priority). Each task links to its detail page.
+2. **Single Todo** (`/todo.html?id=<id>`) - Shows full details of a single todo. Supports inline editing, toggling completion, deleting, and a built-in Pomodoro timer.
+3. **Add Task** (`/add.html`) - Form to create a new todo with title, description, category, priority, and due date.
+4. **Completed** (`/completed.html`) - Lists all completed tasks. Allows reopening or deleting individual tasks, or clearing all at once.
+5. **Stats** (`/stats.html`) - Dashboard showing total/active/completed counts, completion percentage, category and priority breakdowns, and overdue task warnings.
 
 ## Features
 
-See **[docs/FEATURES.md](docs/FEATURES.md)** for the full feature breakdown.
-
-**Highlights:**
-- ✅ Add tasks with title, description, category, and priority
-- ✅ Filter by status (All / Active / Done) and by category or priority
-- ✅ Mark tasks complete/incomplete with live progress bar
-- ✅ Click any task to open its dedicated detail page
-- ✅ Full inline editing on the detail page (edit all fields)
-- ✅ Delete tasks from both the list and detail pages
-- ✅ Data persisted in `backend/todos.json`
-
----
+- Create, read, update, delete todos (full CRUD)
+- Mark todos as complete/incomplete
+- Filter by status (all, active, done), category (work, personal, health, other), or priority (high)
+- Task categories: Work, Personal, Health, Other
+- Task priorities: High, Medium, Low
+- Optional due date with overdue detection
+- Optional description/notes per task
+- Pomodoro timer on the single todo page (25min focus / 5min break)
+- Tracks completed pomodoro count per task
+- Inline editing on the single todo page
+- Progress bar showing completion percentage
+- Stats page with category and priority breakdowns
+- Light color theme
+- Data persisted to a JSON file on the server
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, Vite 8 (MPA mode) |
-| HTTP Client | Axios |
-| Backend | Node.js, Express 5 |
-| Data Store | JSON file (`todos.json`) |
-| Styling | Vanilla CSS (custom design system) |
+- Frontend: React, Vite (multi-page build), Axios
+- Backend: Node.js, Express, CORS
+- Storage: JSON file (todos.json)
 
----
+## How to Run
 
-## Project Structure
+### Backend
 
 ```
-react-node-todo/
-├── backend/
-│   ├── server.js         # Express app — all CRUD routes
-│   ├── todos.json        # Persistent data store
-│   └── package.json
-├── frontend/
-│   ├── index.html        # Entry point → Todo list page
-│   ├── todo.html         # Entry point → Single todo detail page
-│   ├── vite.config.js    # MPA rollup input configuration
-│   ├── src/
-│   │   ├── main.jsx      # Mounts App into index.html
-│   │   ├── todo.jsx      # Mounts TodoApp into todo.html
-│   │   ├── App.jsx       # Todo list page component
-│   │   ├── TodoApp.jsx   # Single todo detail/edit component
-│   │   ├── index.css     # Full design system (dark theme)
-│   │   └── App.css
-│   └── package.json
-└── docs/
-    ├── FEATURES.md       # All features documented
-    ├── API.md            # Full backend API reference
-    └── ARCHITECTURE.md   # Architecture deep-dive
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js ≥ 18
-- npm ≥ 9
-
-### 1. Start the Backend
-
-```bash
 cd backend
 npm install
 node server.js
 ```
 
-The backend runs on **http://localhost:3000**.
+Runs on http://localhost:3000.
 
-### 2. Start the Frontend
+### Frontend
 
-```bash
+```
 cd frontend
 npm install
 npm run dev
 ```
 
-The frontend dev server runs on **http://localhost:5173**.
+Runs on http://localhost:5173.
 
-Open **http://localhost:5173** for the todo list page.  
-Navigate to **http://localhost:5173/todo.html?id=\<id\>** for a single todo's detail page (IDs are shown in the list URLs when you click a task).
+Open http://localhost:5173 in your browser. Make sure the backend is running first.
 
----
+## API Endpoints
 
-## API Reference
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | /api/todos | Get all todos |
+| GET | /api/todos/:id | Get a single todo by ID |
+| POST | /api/todos | Create a new todo |
+| PUT | /api/todos/:id | Update an existing todo |
+| DELETE | /api/todos/:id | Delete a todo |
 
-See **[docs/API.md](docs/API.md)** for the full API documentation.
+### POST /api/todos request body
 
-**Quick reference:**
+```json
+{
+  "title": "string (required)",
+  "description": "string (optional)",
+  "category": "work | personal | health | other",
+  "priority": "high | medium | low",
+  "dueDate": "YYYY-MM-DD or null"
+}
+```
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/todos` | Fetch all todos |
-| `GET` | `/api/todos/:id` | Fetch a single todo by ID |
-| `POST` | `/api/todos` | Create a new todo |
-| `PUT` | `/api/todos/:id` | Update a todo (partial or full) |
-| `DELETE` | `/api/todos/:id` | Delete a todo |
+### PUT /api/todos/:id request body
 
----
+All fields are optional. Only provided fields will be updated.
 
-## Documentation
+```json
+{
+  "title": "string",
+  "description": "string",
+  "category": "string",
+  "priority": "string",
+  "completed": "boolean",
+  "dueDate": "string or null",
+  "pomodoros": "number"
+}
+```
 
-| File | Contents |
-|---|---|
-| [docs/FEATURES.md](docs/FEATURES.md) | Complete feature documentation |
-| [docs/API.md](docs/API.md) | API endpoints, request/response schemas, examples |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture, data model, design decisions |
+## Project Structure
+
+```
+backend/
+  server.js        - Express server with CRUD API
+  todos.json       - Data file (auto-created)
+  package.json
+
+frontend/
+  index.html       - Tasks list page entry
+  todo.html        - Single todo page entry
+  add.html         - Add task page entry
+  completed.html   - Completed tasks page entry
+  stats.html       - Stats page entry
+  vite.config.js   - Vite config with multi-page input
+  src/
+    main.jsx       - Entry for index.html
+    todo.jsx       - Entry for todo.html
+    add.jsx        - Entry for add.html
+    completed.jsx  - Entry for completed.html
+    stats.jsx      - Entry for stats.html
+    App.jsx        - Tasks list component
+    TodoApp.jsx    - Single todo detail component
+    AddTask.jsx    - Add task form component
+    CompletedPage.jsx - Completed tasks component
+    StatsPage.jsx  - Stats dashboard component
+    Navbar.jsx     - Shared navigation component
+    index.css      - Shared styles
+```

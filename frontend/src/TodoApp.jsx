@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import Navbar from './Navbar.jsx'
 
 const PRIORITY_LABELS = { high: 'High', medium: 'Medium', low: 'Low' };
 const CATEGORY_LABELS = { work: 'Work', personal: 'Personal', health: 'Health', other: 'Other' };
@@ -154,19 +155,7 @@ export default function TodoApp() {
 
   if (error) return (
     <div data-page="tasks">
-      <nav className="nav" role="navigation" aria-label="Main navigation">
-        <div className="nav-inner">
-          <a href="/" className="nav-brand" aria-label="Nexus home">
-            <div className="nav-brand-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <span className="nav-brand-name">Nexus</span>
-          </a>
-          <div className="nav-links">
-            <a href="/" className="btn btn-ghost" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>← Back to List</a>
-          </div>
-        </div>
-      </nav>
+      <Navbar activePage="" />
       <div className="page" style={{ textAlign: 'center', paddingTop: '5rem' }}>
         <p className="page-subtitle" style={{ color: 'var(--high-txt)' }}>{error}</p>
         <a href="/" className="btn btn-ghost" style={{ marginTop: '1rem' }}>← Back to List</a>
@@ -178,19 +167,7 @@ export default function TodoApp() {
 
   return (
     <div data-page="tasks">
-      <nav className="nav" role="navigation" aria-label="Main navigation">
-        <div className="nav-inner">
-          <a href="/" className="nav-brand" aria-label="Nexus home">
-            <div className="nav-brand-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <span className="nav-brand-name">Nexus</span>
-          </a>
-          <div className="nav-links">
-            <a href="/" className="btn btn-ghost" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} id="back-to-list">← Back to List</a>
-          </div>
-        </div>
-      </nav>
+      <Navbar activePage="" />
 
       <main className="page" id="main" style={{ maxWidth: '680px' }}>
         <header className="page-hero" style={{ paddingBottom: '1.5rem' }}>

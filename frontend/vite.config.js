@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   build: {
@@ -10,6 +9,9 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         todo: resolve(__dirname, 'todo.html'),
+        add: resolve(__dirname, 'add.html'),
+        completed: resolve(__dirname, 'completed.html'),
+        stats: resolve(__dirname, 'stats.html'),
       },
     },
   },
