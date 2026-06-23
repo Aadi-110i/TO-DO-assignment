@@ -6,6 +6,7 @@ const ICONS = {
   check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>,
   trash: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>,
   empty: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>,
+  chevron: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>,
 }
 
 const PRIORITY_LABELS = { high: 'High', medium: 'Medium', low: 'Low' };
@@ -14,9 +15,11 @@ const CATEGORY_LABELS = { work: 'Work', personal: 'Personal', health: 'Health', 
 export default function App() {
   const [todos, setTodos] = useState([])
   const [filter, setFilter] = useState('all')
+  const [formExpanded, setFormExpanded] = useState(false)
 
   // Form State
   const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [category, setCategory] = useState('work')
   const [priority, setPriority] = useState('medium')
 
@@ -33,8 +36,12 @@ export default function App() {
     e.preventDefault()
     if (!title.trim()) return
     try {
-      await axios.post('http://localhost:3000/api/todos', { title, category, priority })
+      await axios.post('http://localhost:3000/api/todos', { title, description, category, priority })
       setTitle('')
+      setDescription('')
+      setCategory('work')
+      setPriority('medium')
+      setFormExpanded(false)
       fetchTodos()
     } catch (e) { console.error(e) }
   }
@@ -99,24 +106,84 @@ export default function App() {
           <p className="page-subtitle">Filter by category, priority, or completion status.</p>
         </header>
 
-        {/* Quick Add Form */}
+        {/* Add Task Form */}
         <section style={{ marginBottom: '2.5rem' }}>
           <div className="section-heading">
-            <h2 className="section-title">Quick Add</h2>
+            <h2 className="section-title">Add Task</h2>
           </div>
-          <form onSubmit={handleAdd} className="form-card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="What needs to be done..." 
+          <form onSubmit={handleAdd} className="form-card" style={{ padding: '1.25rem' }} id="add-task-form">
+            {/* Title row — always visible */}
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: formExpanded ? '1rem' : 0 }}>
+              <input
+                id="task-title-input"
+                type="text"
+                className="form-input"
+                placeholder="What needs to be done..."
                 value={title}
                 onChange={e => setTitle(e.target.value)}
+                onFocus={() => setFormExpanded(true)}
                 required
                 style={{ flex: 1, margin: 0 }}
+                aria-label="Task title"
               />
-              <button type="submit" className="btn btn-primary">Add Task</button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setFormExpanded(v => !v)}
+                aria-expanded={formExpanded}
+                aria-label="Toggle additional fields"
+                style={{ padding: '0.5rem', lineHeight: 0 }}
+              >
+                <span style={{ display: 'inline-block', transform: formExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', width: '1.1rem', height: '1.1rem' }}>
+                  {ICONS.chevron}
+                </span>
+              </button>
+              <button type="submit" className="btn btn-primary" id="add-task-btn">Add Task</button>
             </div>
+
+            {/* Expanded fields */}
+            {formExpanded && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <textarea
+                  id="task-description-input"
+                  className="form-textarea"
+                  placeholder="Add a description or notes (optional)..."
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  rows={3}
+                  style={{ margin: 0, minHeight: 'auto', resize: 'vertical' }}
+                  aria-label="Task description"
+                />
+                <div className="form-row" style={{ margin: 0 }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" htmlFor="task-category-select">Category</label>
+                    <select
+                      id="task-category-select"
+                      className="form-select"
+                      value={category}
+                      onChange={e => setCategory(e.target.value)}
+                    >
+                      {Object.entries(CATEGORY_LABELS).map(([v, l]) => (
+                        <option key={v} value={v}>{l}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" htmlFor="task-priority-select">Priority</label>
+                    <select
+                      id="task-priority-select"
+                      className="form-select"
+                      value={priority}
+                      onChange={e => setPriority(e.target.value)}
+                    >
+                      {Object.entries(PRIORITY_LABELS).map(([v, l]) => (
+                        <option key={v} value={v}>{l}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
           </form>
         </section>
 
@@ -132,7 +199,7 @@ export default function App() {
         </div>
 
         {/* Filter Bar */}
-        <div className="filter-bar" role="group">
+        <div className="filter-bar" role="group" aria-label="Filter tasks">
           {['all', 'active', 'done', 'work', 'personal', 'health', 'high'].map(f => {
             let count = 0
             if (f === 'all') count = todos.length
@@ -142,8 +209,9 @@ export default function App() {
             else count = todos.filter(t => t.category === f).length
 
             return (
-              <button 
+              <button
                 key={f}
+                id={`filter-${f}`}
                 className={`filter-btn ${filter === f ? 'active' : ''}`}
                 onClick={() => setFilter(f)}
               >
@@ -166,18 +234,31 @@ export default function App() {
           <section aria-label="Active tasks">
             <div className="task-list" role="list">
               {activeItems.map(task => (
-                <div key={task.id} className="task-card" data-priority={task.priority}>
-                  <input type="checkbox" className="task-check" checked={false} onChange={() => handleToggle(task.id, false)} />
+                <div key={task.id} className="task-card" data-priority={task.priority} role="listitem">
+                  <input
+                    type="checkbox"
+                    className="task-check"
+                    checked={false}
+                    onChange={() => handleToggle(task.id, false)}
+                    aria-label={`Mark "${task.title}" as complete`}
+                    id={`check-${task.id}`}
+                  />
                   <div className="task-body">
-                    {/* Link to MPA single todo page */}
-                    <a href={`/todo.html?id=${task.id}`} className="task-title" style={{ display: 'block', textDecoration: 'none' }}>{task.title}</a>
+                    <a href={`/todo.html?id=${task.id}`} className="task-title" style={{ display: 'block', textDecoration: 'none' }}>
+                      {task.title}
+                    </a>
+                    {task.description && (
+                      <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '40ch' }}>
+                        {task.description}
+                      </p>
+                    )}
                     <div className="task-meta">
                       <span className={`badge badge-${task.category}`}>{CATEGORY_LABELS[task.category]}</span>
                       <span className={`badge badge-${task.priority}`}>{PRIORITY_LABELS[task.priority]}</span>
                     </div>
                   </div>
                   <div className="task-actions">
-                    <button className="icon-btn" onClick={() => handleDelete(task.id)} title="Delete">{ICONS.trash}</button>
+                    <button className="icon-btn" onClick={() => handleDelete(task.id)} title="Delete task" aria-label={`Delete "${task.title}"`} id={`delete-${task.id}`}>{ICONS.trash}</button>
                   </div>
                 </div>
               ))}
@@ -191,10 +272,22 @@ export default function App() {
             <p className="done-label">Completed</p>
             <div className="task-list" role="list">
               {doneItems.map(task => (
-                <div key={task.id} className="task-card done" data-priority={task.priority}>
-                  <input type="checkbox" className="task-check" checked={true} onChange={() => handleToggle(task.id, true)} />
+                <div key={task.id} className="task-card done" data-priority={task.priority} role="listitem">
+                  <input
+                    type="checkbox"
+                    className="task-check"
+                    checked={true}
+                    onChange={() => handleToggle(task.id, true)}
+                    aria-label={`Mark "${task.title}" as incomplete`}
+                    id={`check-${task.id}`}
+                  />
                   <div className="task-body">
                     <a href={`/todo.html?id=${task.id}`} className="task-title" style={{ display: 'block', textDecoration: 'none' }}>{task.title}</a>
+                    {task.description && (
+                      <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '40ch' }}>
+                        {task.description}
+                      </p>
+                    )}
                     <div className="task-meta">
                       <span className={`badge badge-${task.category}`}>{CATEGORY_LABELS[task.category]}</span>
                       <span className={`badge badge-${task.priority}`}>{PRIORITY_LABELS[task.priority]}</span>
@@ -202,7 +295,7 @@ export default function App() {
                     </div>
                   </div>
                   <div className="task-actions">
-                    <button className="icon-btn" onClick={() => handleDelete(task.id)} title="Delete">{ICONS.trash}</button>
+                    <button className="icon-btn" onClick={() => handleDelete(task.id)} title="Delete task" aria-label={`Delete "${task.title}"`} id={`delete-${task.id}`}>{ICONS.trash}</button>
                   </div>
                 </div>
               ))}

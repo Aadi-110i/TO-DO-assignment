@@ -1,51 +1,153 @@
-# React + Node Multi-Page Todo App
+# Nexus — React + Node.js Multi-Page Todo App
 
-This is a multi-page Todo application built with React, Node.js, and Express.
+> A full-stack task management application built with **React (Vite MPA)** + **Node.js/Express**, featuring real-time CRUD, filtering, priorities, categories, and inline editing.
+
+---
+
+## 📋 Table of Contents
+
+- [Architecture](#architecture)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [API Reference](#api-reference)
+- [Documentation](#documentation)
+
+---
 
 ## Architecture
 
-- **Backend (`/backend`)**: A Node.js + Express.js REST API that stores todos in a local `todos.json` file.
-- **Frontend (`/frontend`)**: A React application configured with Vite to act as a **Multi-Page Application (MPA)**. It does not use client-side routing (like React Router) to simulate pages. Instead, it has two actual HTML entry points:
-  - `index.html` -> Loads `src/main.jsx` and `App.jsx`
-  - `todo.html` -> Loads `src/todo.jsx` and `TodoApp.jsx`
+This is a **true Multi-Page Application (MPA)** — it does **not** use React Router or client-side navigation. Instead, Vite is configured with two separate HTML entry points, each bundled independently:
 
-Navigating between the list and the single todo item triggers a full page reload, fulfilling the non-SPA requirement.
+| Page | URL | File | Description |
+|---|---|---|---|
+| Todo List | `/` | `index.html` → `App.jsx` | Lists all todos, add/filter/delete |
+| Todo Detail | `/todo.html?id=<id>` | `todo.html` → `TodoApp.jsx` | Single todo view & edit |
+
+Navigating between the two pages triggers a **full browser page reload**, satisfying the non-SPA requirement.
+
+```
+Browser
+  ├── GET /               → index.html  → React App (list)
+  └── GET /todo.html?id=X → todo.html   → React App (detail)
+              │
+              ▼ (HTTP API calls)
+        Express Backend (port 3000)
+              │
+              ▼
+          todos.json (file-based persistence)
+```
+
+---
 
 ## Features
 
-- **Multi-Page Navigation**: True MPA architecture using Vite's `rollupOptions.input`.
-- **Todos List Page** (`/`):
-  - View all todos
-  - Add new todos with a title and optional description
-  - Toggle completion status
-  - Delete todos
-  - Click on a todo title to navigate to its dedicated page
-- **Single Todo Page** (`/todo.html?id=...`):
-  - Reads the `id` from the URL query parameters
-  - Fetches the specific todo from the backend
-  - Displays full details: Title, Description, Completion Status, and Creation Date
-- **Backend API**:
-  - `GET /api/todos` - Fetch all
-  - `GET /api/todos/:id` - Fetch single
-  - `POST /api/todos` - Create
-  - `PUT /api/todos/:id` - Update
-  - `DELETE /api/todos/:id` - Delete
-- **Data Persistence**: Saves data to `backend/todos.json`.
+See **[docs/FEATURES.md](docs/FEATURES.md)** for the full feature breakdown.
 
-## How to Run
+**Highlights:**
+- ✅ Add tasks with title, description, category, and priority
+- ✅ Filter by status (All / Active / Done) and by category or priority
+- ✅ Mark tasks complete/incomplete with live progress bar
+- ✅ Click any task to open its dedicated detail page
+- ✅ Full inline editing on the detail page (edit all fields)
+- ✅ Delete tasks from both the list and detail pages
+- ✅ Data persisted in `backend/todos.json`
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Vite 8 (MPA mode) |
+| HTTP Client | Axios |
+| Backend | Node.js, Express 5 |
+| Data Store | JSON file (`todos.json`) |
+| Styling | Vanilla CSS (custom design system) |
+
+---
+
+## Project Structure
+
+```
+react-node-todo/
+├── backend/
+│   ├── server.js         # Express app — all CRUD routes
+│   ├── todos.json        # Persistent data store
+│   └── package.json
+├── frontend/
+│   ├── index.html        # Entry point → Todo list page
+│   ├── todo.html         # Entry point → Single todo detail page
+│   ├── vite.config.js    # MPA rollup input configuration
+│   ├── src/
+│   │   ├── main.jsx      # Mounts App into index.html
+│   │   ├── todo.jsx      # Mounts TodoApp into todo.html
+│   │   ├── App.jsx       # Todo list page component
+│   │   ├── TodoApp.jsx   # Single todo detail/edit component
+│   │   ├── index.css     # Full design system (dark theme)
+│   │   └── App.css
+│   └── package.json
+└── docs/
+    ├── FEATURES.md       # All features documented
+    ├── API.md            # Full backend API reference
+    └── ARCHITECTURE.md   # Architecture deep-dive
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js ≥ 18
+- npm ≥ 9
 
 ### 1. Start the Backend
+
 ```bash
 cd backend
 npm install
 node server.js
 ```
-The backend will run on `http://localhost:3000`.
+
+The backend runs on **http://localhost:3000**.
 
 ### 2. Start the Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-The frontend will run on `http://localhost:5173`. Open this URL in your browser.
+
+The frontend dev server runs on **http://localhost:5173**.
+
+Open **http://localhost:5173** for the todo list page.  
+Navigate to **http://localhost:5173/todo.html?id=\<id\>** for a single todo's detail page (IDs are shown in the list URLs when you click a task).
+
+---
+
+## API Reference
+
+See **[docs/API.md](docs/API.md)** for the full API documentation.
+
+**Quick reference:**
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/todos` | Fetch all todos |
+| `GET` | `/api/todos/:id` | Fetch a single todo by ID |
+| `POST` | `/api/todos` | Create a new todo |
+| `PUT` | `/api/todos/:id` | Update a todo (partial or full) |
+| `DELETE` | `/api/todos/:id` | Delete a todo |
+
+---
+
+## Documentation
+
+| File | Contents |
+|---|---|
+| [docs/FEATURES.md](docs/FEATURES.md) | Complete feature documentation |
+| [docs/API.md](docs/API.md) | API endpoints, request/response schemas, examples |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture, data model, design decisions |
