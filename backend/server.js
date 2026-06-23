@@ -10,88 +10,78 @@ const DATA_FILE = path.join(__dirname, 'todos.json');
 app.use(cors());
 app.use(express.json());
 
-// Helper function to read todos
 const readTodos = () => {
     if (!fs.existsSync(DATA_FILE)) {
         fs.writeFileSync(DATA_FILE, JSON.stringify([]));
     }
-    const data = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(data);
+    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
 };
 
-// Helper function to write todos
 const writeTodos = (todos) => {
     fs.writeFileSync(DATA_FILE, JSON.stringify(todos, null, 2));
 };
 
-// GET all todos
-app.get('/api/todos', (req, res) => {
-    const todos = readTodos();
-    res.json(todos);
-});
+app.get('/api/todos', (req, res) => res.json(readTodos()));
 
-// GET single todo
 app.get('/api/todos/:id', (req, res) => {
-    const todos = readTodos();
-    const todo = todos.find(t => t.id === req.params.id);
-    if (todo) {
-        res.json(todo);
-    } else {
-        res.status(404).json({ error: 'Todo not found' });
-    }
+    const todo = readTodos().find(t => t.id === req.params.id);
+    todo ? res.json(todo) : res.status(404).json({ error: 'Not found' });
 });
 
-// POST new todo
 app.post('/api/todos', (req, res) => {
-    const { title, description } = req.body;
-    if (!title) return res.status(400).json({ error: 'Title is required' });
+    const { title, description, category, priority } = req.body;
+    if (!title) return res.status(400).json({ error: 'Title required' });
 
     const todos = readTodos();
     const newTodo = {
         id: Date.now().toString(),
         title,
         description: description || '',
+        category: category || 'other',
+        priority: priority || 'medium',
         completed: false,
-        createdAt: new Date().toISOString()
+        createdAt: Date.now(),
+        doneAt: null
     };
-    todos.push(newTodo);
+    todos.unshift(newTodo); // Add to beginning
     writeTodos(todos);
     res.status(201).json(newTodo);
 });
 
-// PUT update todo
 app.put('/api/todos/:id', (req, res) => {
-    const { title, description, completed } = req.body;
+    const { title, description, completed, category, priority } = req.body;
     const todos = readTodos();
     const index = todos.findIndex(t => t.id === req.params.id);
 
     if (index !== -1) {
+        const wasCompleted = todos[index].completed;
+        const isNowCompleted = completed !== undefined ? completed : wasCompleted;
+        
         todos[index] = {
             ...todos[index],
             title: title !== undefined ? title : todos[index].title,
             description: description !== undefined ? description : todos[index].description,
-            completed: completed !== undefined ? completed : todos[index].completed
+            category: category !== undefined ? category : todos[index].category,
+            priority: priority !== undefined ? priority : todos[index].priority,
+            completed: isNowCompleted,
+            doneAt: (!wasCompleted && isNowCompleted) ? Date.now() : (isNowCompleted ? todos[index].doneAt : null)
         };
         writeTodos(todos);
         res.json(todos[index]);
     } else {
-        res.status(404).json({ error: 'Todo not found' });
+        res.status(404).json({ error: 'Not found' });
     }
 });
 
-// DELETE todo
 app.delete('/api/todos/:id', (req, res) => {
     const todos = readTodos();
-    const filteredTodos = todos.filter(t => t.id !== req.params.id);
-
-    if (todos.length !== filteredTodos.length) {
-        writeTodos(filteredTodos);
+    const filtered = todos.filter(t => t.id !== req.params.id);
+    if (todos.length !== filtered.length) {
+        writeTodos(filtered);
         res.status(204).send();
     } else {
-        res.status(404).json({ error: 'Todo not found' });
+        res.status(404).json({ error: 'Not found' });
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Backend server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
